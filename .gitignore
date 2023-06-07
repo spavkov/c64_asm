@@ -1,0 +1,6 @@
+# kickass files
+*.sym
+*.dbg
+
+# vs code files
+*.vs
