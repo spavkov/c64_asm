@@ -3,6 +3,7 @@ BasicUpstart2(start)
 //---------------------------------------------------------
 //---------------------------------------------------------
 //	Flexible Line distance http://www.antimon.org/dl/c64/code/fld.txt
+//    better version here: https://web.archive.org/web/20140226123633/http://c64assembly.elorama.se/
 //  
 //  FLD is a hack that never allows a badline.
 //  This is done by manipulating bit 0-2 in  $d011 (Vertical raster scroll.) so it newer will have the same 
