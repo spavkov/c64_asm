@@ -8,6 +8,7 @@
 //of each point [0-7]. The pixel masking uses tables, too.
 //
 // code org from http://www.lemon64.com/forum/viewtopic.php?p=599398&sid=5a9ef1a2915107a94d80c0a39f68fff0
+// https://web.archive.org/web/20140226123633/http://c64assembly.elorama.se/
 //
 // Pierre Hallsten added
 //
