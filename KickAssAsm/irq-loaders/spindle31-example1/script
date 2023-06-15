@@ -1,0 +1,24 @@
+# This is an example script bundled with Spindle
+# https://linusakesson.net/software/spindle/
+
+# First part contains the master demo routine and the music.
+# Spindle automatically jumps to the load address of the first file listed
+# here, unless you specify an entry point with the -e option.
+
+demo.prg
+Specular_Highlight.sid		1000	7e
+
+# Each of the following parts consists of a Koala picture.
+
+# We extract the bitmap and video matrix directly to their target addresses.
+# Colour data follows the video matrix data, and must be copied into colour RAM
+# after the loadercall returns.
+
+pic1.kla			6000	2	1f40
+pic1.kla			4000	1f42
+
+pic2.kla			6000	2	1f40
+pic2.kla			4000	1f42
+
+pic3.kla			6000	2	1f40
+pic3.kla			4000	1f42

@@ -1,12 +1,16 @@
 :BasicUpstart2(start)
 
-.var picture = LoadBinary("test2.koa", BF_KOALA)
+.var picture = LoadBinary("indus3.koa", BF_KOALA)
 
-start:  	lda #$38
+// https://sta.c64.org/cbm64mem.html
+// https://www.lemon64.com/forum/viewtopic.php?t=82157
+
+start:  	
+    lda %00110000 // sets screen off (bit 0) and bitmapped mode (bit 5)
 	sta $d018
-	lda #$d8
+	lda %00000100 //  turn on vic multi-color mode
 	sta $d016
-	lda #$3b
+	lda #$3B
 	sta $d011
 	lda #WHITE
 	sta $d020
