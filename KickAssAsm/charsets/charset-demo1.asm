@@ -49,11 +49,11 @@ start:
     rts
 
 message:
-    .text "            custom characters           "
+    .text "custom characters (press space)"
     .byte $00
 
 message2:
-    .text "          multicolor characters         "
+    .text "multicolor characters (press space)"
     .byte $00
 
 message3:
