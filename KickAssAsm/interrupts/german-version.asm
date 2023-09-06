@@ -23,7 +23,7 @@ start:
 
          // Tell the raster IRQ when to
          // trigger (when raster line=0)
-         lda #startblack
+         lda startblack
          sta raster
 
          // Clear bit 8 of raster reg

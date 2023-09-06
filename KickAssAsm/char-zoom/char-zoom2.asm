@@ -1,3 +1,4 @@
+// source: https://codebase64.org/doku.php?id=base:8x_scale_charset_scrolling_message
 /*---------------------------------------
   KickAssember variables used in routine.
 ---------------------------------------*/

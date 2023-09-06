@@ -60,6 +60,7 @@ start:
 					inx
 					bne !-
 
+
 					sei
 					lda #$7F
 					sta $DC0D    

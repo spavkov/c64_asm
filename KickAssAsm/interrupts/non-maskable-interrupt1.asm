@@ -29,11 +29,11 @@ start:
     // 985248 (=$F08A0) cycles per second -> for PAL , for NTSC you need to use different values
     // load timer A with $F08A and timer B with #$10
     
-    lda #$89 // $8A - 1 (because timer does not fire on zero but on unerflow)
+    lda #$89  // $8A - 1 (because timer does not fire on zero but on unerflow)
     sta $dd04 // Low byte for Timer A
     lda #$f0  
     sta $dd05 // high byte for Timer A
-    lda #$f // #$10 -1 (because timer does not fire on zero but on unerflow)  //https://www.lemon64.com/forum/viewtopic.php?t=70222&start=15
+    lda #$f   // #$10 -1 (because timer does not fire on zero but on unerflow)  //https://www.lemon64.com/forum/viewtopic.php?t=70222&start=15
     sta $dd06
     lda #$00
     sta $dd07
