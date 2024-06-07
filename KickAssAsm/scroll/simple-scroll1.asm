@@ -75,7 +75,7 @@ nowrap:           sta screenloc+$27
 endscroll:        rts
 
 message:         .text "hello folks. this is a 1x1 char message scroller"
-                 .text " inside an IRQ interrupt, coded by richard bayliss"
+                 .text " inside an irq interrupt, coded by richard bayliss"
                  .text " of the new dimension, in acme cross assembler ... "
                  .text "we do hope you like it //o)) ... hopefully you should"
                  .text "find the source code useful for future demos and stu"

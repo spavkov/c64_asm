@@ -1,3 +1,5 @@
+// https://digitalerr0r.net/2011/05/01/commodore-64-programming-8-text-and-custom-charsets/
+
 :BasicUpstart2(main)
 
 main:

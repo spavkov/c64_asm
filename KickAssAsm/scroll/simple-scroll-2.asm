@@ -1,18 +1,21 @@
 // http://www.0xc64.com/2013/11/24/1x1-smooth-text-scroller/
+// github: https://github.com/0xc64/c64/blob/master/raster/textscroller.asm
 
 BasicUpstart2(start)
 
 start:
 
-			lda #00 			// black sceen & background
+			lda #01 			// black sceen & background
 			sta $d020
+			lda #00
 			sta $d021
 
 plotcolour:	ldx #$40				// init colour map
 			lda #01
+plotcolourLoop:			
 			sta $dbc0, x
 			dex
-			bpl plotcolour+4
+			bpl plotcolourLoop
 
 			sei					// set up interrupt
 			lda #$7f
@@ -35,7 +38,7 @@ plotcolour:	ldx #$40				// init colour map
 			rts					// back to BASIC
 
 noscroll:	lda $d016			// default to no scroll on start of screen
-			and #248			// mask register to maintain higher bits
+			and #%11111000   	// mask register to maintain higher bits - leave first bits 4-8 as is and switch of bits 1-3
 			sta $d016
 			ldy #242			// trigger scroll on last character row
 			sty $d012
@@ -47,7 +50,7 @@ noscroll:	lda $d016			// default to no scroll on start of screen
 			jmp $ea31
 
 scroll:		lda $d016			// grab scroll register
-			and #248			// mask lower 3 bits
+			and #%11111000      // mask lower 3 bits
 			adc offset			// apply scroll
 			sta $d016
 
@@ -103,10 +106,10 @@ offset:		.byte 07 			// start at 7 for left scroll
 smooth:		.byte 01
 nextchar:	.byte 00
 message:		
-            .text "slobodan pavkov in da house.... "
+            .text "simple scroll.... "
             .byte 255
 
-colours:	.byte 00, 00, 00, 00, 06, 06, 06, 06
+colours:	.byte 01, 00, 00, 00, 06, 06, 06, 06
 			.byte 14, 14, 14, 14, 03, 03, 03, 03
 			.byte 03, 03, 03, 03, 14, 14, 14, 14
-			.byte 06, 06, 06, 06, 00, 00, 00, 00
+			.byte 06, 06, 06, 06, 00, 00, 00, 01
