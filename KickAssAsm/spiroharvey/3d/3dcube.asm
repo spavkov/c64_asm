@@ -1,21 +1,18 @@
 // Program: 3D cube - Marcello of Retro64 Blog
 // https://retro64.altervista.org/blog/another-look-at-3d-graphics-fast-hidden-faces-removal-back-face-culling/
-* = $801
-
-.label .byte = $fc		//fc, fd used
 
 
+label: .byte  $fc		//fc, fd used
 
-basic:		.byte	11,8,10,0,158,50,48,54,49,0,0,0
-               
-                
+BasicUpstart2(start)
+
 					//basic program for autostart
                                         
                                         
 	
-		        var bmpscreen = 24576	//bmpscreen start
-                bmpscreen2 = 8192       //alternate bmpscreen start 
-                
+		var bmpscreen = 24576	//bmpscreen start
+                var bmpscreen2 = 8192       //alternate bmpscreen start
+start:
                 lda #<bmpscreen
                 sta actual_screen+1
                 lda #>bmpscreen
@@ -1551,7 +1548,7 @@ plot:
                                         
                 lda #>(xtablehigh + $ff)		//added brackets, otherwise it won"t work
                 sta XTBmdf+2		
-skipadj::
+skipadj:
 
                 lda ytablelow,y
                 clc

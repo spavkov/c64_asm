@@ -29,57 +29,57 @@ msg0:
         // Black color must always land in an empty .word to avoid adding
         // the "if color==black" inc, which cost more .bytes than just adding
         // a fews "0" here.
-        .text "A" * 8
-        .text "M" * 8
-        .text "O" * 8
-        .text "R" * 8
+        .text "A" 
+        .text "M" 
+        .text "O" 
+        .text "R" 
         .byte 0
-        .text "P" * 8
-        .text "A" * 8
-        .text "R" * 8
-        .text "A" * 8
+        .text "P" 
+        .text "A" 
+        .text "R" 
+        .text "A" 
         .byte 0
-        .text "D" * 8
-        .text "O" * 8
-        .text "S" * 8
+        .text "D" 
+        .text "O" 
+        .text "S" 
         .byte 0
-        .text "B" * 8
-        .text "E" * 8
-        .text "S" * 8
-        .text "I" * 8
-        .text "T" * 8
-        .text "O" * 8
-        .text "S" * 8
+        .text "B" 
+        .text "E" 
+        .text "S" 
+        .text "I" 
+        .text "T" 
+        .text "O" 
+        .text "S" 
         .byte 0
-        .text "P" * 8
-        .text "A" * 8
-        .text "R" * 8
-        .text "A" * 8
+        .text "P" 
+        .text "A" 
+        .text "R" 
+        .text "A" 
         .byte 0
-        .text "F" * 8
-        .text "L" * 8
-        .text "A" * 8
-        .text "S" * 8
-        .text "H" * 8
-        .text "P" * 8
-        .text "A" * 8
-        .text "R" * 8
-        .text "T" * 8
-        .text "Y" * 8
+        .text "F" 
+        .text "L" 
+        .text "A" 
+        .text "S" 
+        .text "H" 
+        .text "P" 
+        .text "A" 
+        .text "R" 
+        .text "T" 
+        .text "Y" 
         .byte 0
-        .text "S" * 8
-        .text "A" * 8
-        .text "L" * 8
-        .text "U" * 8
-        .text "D" * 8
-        .text "O" * 8
-        .text "S" * 8
+        .text "S" 
+        .text "A" 
+        .text "L" 
+        .text "U" 
+        .text "D" 
+        .text "O" 
+        .text "S" 
         .byte 0
-        .text "G" * 8                   // This last .word is not printed when color
-        .text "E" * 8                   // is Black, or when the char to print is empty.
-        .text "N" * 8                   // The last two .words "saludos gente" were chosen
-        .text "T" * 8                   // on purpose so that if "gente" is not printed
-        .text "E" * 8                   // it doesn"t affect the meaning of the sentence.
+        .text "G"                    // This last .word is not printed when color
+        .text "E"                    // is Black, or when the char to print is empty.
+        .text "N"                    // The last two .words "saludos gente" were chosen
+        .text "T"                    // on purpose so that if "gente" is not printed
+        .text "E"                    // it doesn"t affect the meaning of the sentence.
 
         // End of message is "$8e", which is the opcode of "stx"
 

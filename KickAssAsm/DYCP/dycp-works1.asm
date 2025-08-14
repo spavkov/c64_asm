@@ -16,7 +16,7 @@
 .label amount= 38      // amount of chars to plot-1
 .label padchar= 32     // code used for clearing the screen
 
-:BasicUpstart2(bootstart)
+BasicUpstart2(bootstart)
 
 bootstart:
 

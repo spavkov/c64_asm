@@ -1,7 +1,7 @@
 // This is an example demo bundled with Spindle
 // linusakesson.net/software/spindle/
 
-	* = $800
+BasicUpstart2(entry)
 entry:
 	// Call music init.
 
