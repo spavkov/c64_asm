@@ -304,11 +304,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\git\\test\\ClaudeCode\\DemoEffects\\src\\DemoEffectsShowcase\\DemoEffectsShowcase.csproj",
+      "projectUniqueName": "C:\\git\\c64\\c64_asm\\csharp\\DemoEffectsShowcase\\DemoEffectsShowcase.csproj",
       "projectName": "DemoEffectsShowcase",
-      "projectPath": "C:\\git\\test\\ClaudeCode\\DemoEffects\\src\\DemoEffectsShowcase\\DemoEffectsShowcase.csproj",
+      "projectPath": "C:\\git\\c64\\c64_asm\\csharp\\DemoEffectsShowcase\\DemoEffectsShowcase.csproj",
       "packagesPath": "C:\\Users\\slpavkov\\.nuget\\packages\\",
-      "outputPath": "C:\\git\\test\\ClaudeCode\\DemoEffects\\src\\DemoEffectsShowcase\\obj\\",
+      "outputPath": "C:\\git\\c64\\c64_asm\\csharp\\DemoEffectsShowcase\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
