@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "JyhK41nU80c=",
+  "success": true,
+  "projectFilePath": "C:\\git\\test\\ClaudeCode\\DemoEffects\\src\\DemoEffectsShowcase\\DemoEffectsShowcase.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\slpavkov\\.nuget\\packages\\microsoft.win32.systemevents\\9.0.2\\microsoft.win32.systemevents.9.0.2.nupkg.sha512",
+    "C:\\Users\\slpavkov\\.nuget\\packages\\sdl2-cs.netcore\\2.0.8\\sdl2-cs.netcore.2.0.8.nupkg.sha512",
+    "C:\\Users\\slpavkov\\.nuget\\packages\\sdl2.nuget\\2.32.8\\sdl2.nuget.2.32.8.nupkg.sha512",
+    "C:\\Users\\slpavkov\\.nuget\\packages\\sdl2.nuget.redist\\2.32.8\\sdl2.nuget.redist.2.32.8.nupkg.sha512",
+    "C:\\Users\\slpavkov\\.nuget\\packages\\system.drawing.common\\9.0.2\\system.drawing.common.9.0.2.nupkg.sha512"
+  ],
+  "logs": []
+}
