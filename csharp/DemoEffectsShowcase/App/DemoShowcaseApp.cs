@@ -23,6 +23,12 @@ public sealed class DemoShowcaseApp
     private bool _draggingSlider;
     private int _dragParamIndex = -1;
     private int _dragColorChannel = -1;
+    private readonly string? _startupEffectId;
+
+    public DemoShowcaseApp(string? startupEffectId = null)
+    {
+        _startupEffectId = startupEffectId;
+    }
 
     public void Run()
     {
@@ -32,6 +38,7 @@ public sealed class DemoShowcaseApp
 
         _all.AddRange(EffectRegistry.CreateDefault());
         ApplyFilter();
+        ApplyStartupSelection();
         ActivateSelected();
         _running = true;
 
@@ -227,6 +234,23 @@ public sealed class DemoShowcaseApp
         _active?.Dispose();
         _active = d.Factory();
         _active.Initialize(new EffectInitContext(1, 1));
+    }
+
+    private void ApplyStartupSelection()
+    {
+        if (string.IsNullOrWhiteSpace(_startupEffectId))
+        {
+            return;
+        }
+
+        for (var i = 0; i < _filtered.Count; i++)
+        {
+            if (string.Equals(_filtered[i].Id, _startupEffectId, StringComparison.OrdinalIgnoreCase))
+            {
+                _selectedIndex = i;
+                return;
+            }
+        }
     }
 
     private void UpdateTitle()

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DemoEffectsShowcase")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+11cac8b2247f1d232f9d8255fb52cb61bff9f682")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+530d7c8a0ab9fbcf5fefe6e24b6625c4cba07e60")]
 [assembly: System.Reflection.AssemblyProductAttribute("DemoEffectsShowcase")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DemoEffectsShowcase")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
