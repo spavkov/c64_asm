@@ -1,8 +1,10 @@
 BasicUpstart2(start)
 
 // Stable raster bar that moves down the screen and wraps to the top:
+// - Uses double pre-IRQs (one line before each edge) + line-change wait
+//   to eliminate horizontal tearing / jitter.
 // - Sets border RED at the current barTop scanline
-// - Sets border BLACK 8 lines later
+// - Sets border BLACK ROW_HEIGHT lines later
 // - Increments barTop each frame; wraps from bottom back to top
 
 // --- Constants (PAL defaults) ---
@@ -13,8 +15,8 @@ BasicUpstart2(start)
 .const RASTER_BASE   = $30        // change to $20 for NTSC
 .const D011VAL       = $1b        // normal text, y-scroll = 3
 .const RASTER_MIN    = RASTER_BASE + (D011VAL & $07) // first character row top
-.const RASTER_MAX    = $f7        // last safe top line (so +8 stays <=255)
-.const ROW_HEIGHT    = 8
+.const RASTER_MAX    = $e0        // last safe top line (so +8 stays <=255)
+.const ROW_HEIGHT    = 16
 
 * = $4000 "Stable Raster Demo"
 
@@ -34,15 +36,17 @@ start:
 	lda #RASTER_MIN
 	sta barTop
 
-	// Install pre-IRQ (line before current barTop)
-	lda #<irq_pre
-	sta $fffe
-	lda #>irq_pre
-	sta $ffff
-	lda barTop
-	sec
-	sbc #1
-	sta $d012
+		// Install unified pre-edge IRQ (line before first ON edge)
+		lda #<irq_edge_pre
+		sta $fffe
+		lda #>irq_edge_pre
+		sta $ffff
+		lda #0
+		sta edgeState              // 0 = next edge is ON, 1 = OFF
+		lda barTop
+		sec
+		sbc #1
+		sta $d012                  // pre line for first ON edge
 
 	// Enable raster IRQs and disable/ack CIA interrupts
 	lda #$81
@@ -58,60 +62,81 @@ start:
 	cli
 	jmp *
 
-// Pre-IRQ: arms the main IRQ at barTop
-irq_pre:
+// Unified pre-edge IRQ: fires the line BEFORE the target (either ON or OFF edge).
+// It waits until the target line arrives (stable) then toggles the color and schedules
+// the next pre-edge IRQ.
+irq_edge_pre:
 	lda #$ff
 	sta $d019                   // ACK raster IRQ
-	lda barTop
-	sta $d012                   // next IRQ at barTop
-	lda #<irq_row1
-	sta $fffe
-	lda #>irq_row1
-	sta $ffff
-	rti
 
-// Main IRQ #1: left edge of barTop → set border to RED
-irq_row1:
-	lda #$ff
-	sta $d019                   // ACK raster IRQ
-	lda #RED
-	sta $d020                   // border = red (as early as possible)
+	// Decide which edge: edgeState 0 = ON, 1 = OFF
+	lda edgeState
+	beq !doOnCalc+
+	// OFF edge target = barTop + ROW_HEIGHT
 	lda barTop
 	clc
 	adc #ROW_HEIGHT
-	sta $d012                   // schedule second edge at barTop+8
-	lda #<irq_row2
-	sta $fffe
-	lda #>irq_row2
-	sta $ffff
-	rti
+	bne !haveTarget+            // always taken
+!doOnCalc:
+	lda barTop                  // ON edge target = barTop
+!haveTarget:
+	sta currentTarget
 
-// Main IRQ #2: left edge at barTop+8 → set border back to BLACK and advance
-irq_row2:
-	lda #$ff
-	sta $d019                   // ACK raster IRQ
+	// Wait for target line
+wait:
+	lda currentTarget
+	cmp $d012
+	bne wait
+
+	// We are a few fixed cycles into the target line – toggle color.
+	lda edgeState
+	bne !doOff+
+	// ON edge: set bar color
+	lda #RED
+	sta $d020
+	sta $d021
+	lda #1
+	sta edgeState               // next edge = OFF
+	jmp !schedule+
+!doOff:
 	lda #BLACK
-	sta $d020                   // border = black
-	// Advance barTop (wrap to RASTER_MIN after RASTER_MAX)
+	sta $d020
+	sta $d021
+	// Advance barTop
 	lda barTop
 	clc
 	adc #1
 	cmp #RASTER_MAX+1
-	bcc !storeTop+
+	bcc !store+
 	lda #RASTER_MIN
-!storeTop:
+!store:
 	sta barTop
-
-	// Re-arm pre-IRQ on barTop-1 for next frame
+	lda #0
+	sta edgeState               // next edge = ON
+!schedule:
+	// Compute next pre-edge line = (nextEdgeTarget) -1
+	lda edgeState
+	beq !nextOn+
+	// next OFF target = barTop + ROW_HEIGHT
+	lda barTop
+	clc
+	adc #ROW_HEIGHT
+	bne !sub1+                  // always
+!nextOn:
+	lda barTop
+!sub1:
 	sec
 	sbc #1
-	sta $d012
-	lda #<irq_pre
+	sta $d012                   // pre line for next edge
+	// Keep vector pointing here
+	lda #<irq_edge_pre
 	sta $fffe
-	lda #>irq_pre
+	lda #>irq_edge_pre
 	sta $ffff
 	rti
 
 // --- Variables ---
 barTop: .byte 0
+edgeState: .byte 0
+currentTarget: .byte 0
 

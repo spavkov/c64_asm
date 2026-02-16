@@ -105,7 +105,7 @@ retSpace:
 
 // --- Data/vars ---
 message:
-	.text "    HELLO WORLD FROM C64 SMOOTH SCROLLER DEMO                                "
+	.text "                                  HELLO WORLD FROM C64 SMOOTH SCROLLER DEMO                                "
 	.byte 0
 
 xscr:   .byte 0

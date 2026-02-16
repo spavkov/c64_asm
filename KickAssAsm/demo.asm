@@ -145,7 +145,7 @@ internalloop:
          bne internalloop   //If no waste 1 more
          inx
          inc $d020
-         cpx #50
+         cpx #10
          bcs internalloop
         //lda  ($04,x)    // just wait 6 cycles to make the bar longer.
         //lda  ($04,x)    // just wait 6 cycles to make the bar longer.
@@ -172,7 +172,7 @@ internalloop:
 
 isrset:  pha             // preserve a so we can restore it before returning.
 
-        lda  #91        // set raster interrupt for line 91.
+        lda  #92        // set raster interrupt for line 91.
         sta  $d012
         lda  #%01111111 // clear rst8 bit, the interrupt line is
         and  $d011      // above raster line 255.
