@@ -10,7 +10,7 @@ public sealed class MeatballsEffect : DemoSceneEffect
     private float _speed = 1.1f;
     private float _threshold = 0.9f;
     private readonly IReadOnlyList<EffectParameterDefinition> _parameters;
-    private const int Step = 6;
+    private const int Step = 5;
 
     public MeatballsEffect()
     {

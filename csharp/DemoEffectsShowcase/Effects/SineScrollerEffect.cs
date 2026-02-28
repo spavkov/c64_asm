@@ -12,12 +12,14 @@ public sealed class SineScrollerEffect : DemoSceneEffect
     private float _speed = 95f;
     private float _amp = 35f;
     private readonly IReadOnlyList<EffectParameterDefinition> _params;
+    private float _fontSize = 2;
 
     public SineScrollerEffect()
     {
         _params =
         [
             EffectParameters.Float("speed", "Scroll Speed", () => _speed, v => _speed = v, 20f, 220f),
+            EffectParameters.Float("fontsize", "Font Size", () => _fontSize, v => _fontSize = v, 2f, 5f),
             EffectParameters.Float("amplitude", "Wave Amplitude", () => _amp, v => _amp = v, 5f, 70f)
         ];
     }
@@ -40,12 +42,13 @@ public sealed class SineScrollerEffect : DemoSceneEffect
     public void Render(IntPtr renderer)
     {
         // Fixed-width pixel font: each character advances by 6 pixels at scale 1.
-        var advance = 6 * GlyphScale;
+        var fontSizeAsInt = (int)_fontSize;
+        var advance = 6 * fontSizeAsInt;
         var total = ScrollText.Length * advance;
 
         // Scroll offset loops with modulo so the text repeats seamlessly.
         var scroll = (float)(_t * _speed % total);
-        var baseY = _h / 2 - (7 * GlyphScale) / 2;
+        var baseY = _h / 2 - (7 * fontSizeAsInt) / 2;
         var firstX = (int)(_w - scroll);
 
         // Draw repeated copies of the text so the viewport is always filled.
