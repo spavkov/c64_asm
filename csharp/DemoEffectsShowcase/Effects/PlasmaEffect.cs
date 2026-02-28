@@ -44,17 +44,22 @@ public sealed class PlasmaEffect : DemoSceneEffect
 
     public void Render(IntPtr renderer)
     {
+        // We draw in bigger blocks (instead of every pixel) to keep this fast.
         var block = Math.Max(BaseBlock, (int)MathF.Sqrt((_width * _height) / 12000f));
 
         for (var y = 0; y < _height; y += block)
         {
             for (var x = 0; x < _width; x += block)
             {
+                // Three sine waves are sampled at different angles/speeds.
+                // Their average creates smooth "plasma" motion.
                 var v1 = Math.Sin(x * 0.03 + _time);
                 var v2 = Math.Sin(y * 0.04 + _time * 1.3);
                 var v3 = Math.Sin((x + y) * 0.02 + _time * 0.7);
                 var value = (v1 + v2 + v3) / 3.0;
 
+                // Use phase offsets (2.09 and 4.18 radians) so R/G/B are out of sync.
+                // That color phase shift is what gives classic rainbow plasma gradients.
                 var r = (byte)Math.Clamp((128 + 127 * Math.Sin(value * 4.0 + _time)) * _tint.X, 0, 255);
                 var g = (byte)Math.Clamp((128 + 127 * Math.Sin(value * 4.0 + 2.09 + _time * 1.1)) * _tint.Y, 0, 255);
                 var b = (byte)Math.Clamp((128 + 127 * Math.Sin(value * 4.0 + 4.18 + _time * 0.9)) * _tint.Z, 0, 255);

@@ -49,11 +49,15 @@ public sealed class RotozoomEffect : DemoSceneEffect
         {
             for (var x = 0; x < _width; x += step)
             {
+                // Normalize to -1..+1 around the center of the screen.
                 var nx = (x - cx) / cx;
                 var ny = (y - cy) / cy;
+
+                // 2D rotation matrix.
                 var rx = (nx * c - ny * s) * zoom;
                 var ry = (nx * s + ny * c) * zoom;
 
+                // Convert rotated coordinates into checkerboard tile indices.
                 var tileX = ((int)MathF.Floor((rx + 100f) * 10f)) & 1;
                 var tileY = ((int)MathF.Floor((ry + 100f) * 10f)) & 1;
                 var checker = tileX ^ tileY;

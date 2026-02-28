@@ -49,6 +49,8 @@ public sealed class TunnelEffect : DemoSceneEffect
 
     public void Render(IntPtr renderer)
     {
+        // These offsets move the texture lookup over time.
+        // shiftX creates forward motion; shiftY creates rotational spin.
         var shiftX = (int)(TexWidth * _forwardSpeed * _time);
         var shiftY = (int)(TexHeight * _rotationSpeed * _time);
         var step = Math.Max(BaseStep, (int)MathF.Sqrt((_width * _height) / 12000f));
@@ -57,6 +59,8 @@ public sealed class TunnelEffect : DemoSceneEffect
             for (var x = 0; x < _width; x += step)
             {
                 var idx = y * _width + x;
+                // distanceTable + angleTable turn screen coordinates into polar coords.
+                // We then sample a 2D texture using those polar coordinates.
                 var texX = (_distanceTable[idx] + shiftX) & (TexWidth - 1);
                 var texY = (_angleTable[idx] + shiftY) & (TexHeight - 1);
                 var sample = _texture[texY * TexWidth + texX];
@@ -78,6 +82,7 @@ public sealed class TunnelEffect : DemoSceneEffect
 
     private void BuildTexture()
     {
+        // XOR pattern gives us an inexpensive high-contrast texture.
         _texture = new byte[TexWidth * TexHeight];
         for (var y = 0; y < TexHeight; y++)
         {
@@ -101,13 +106,17 @@ public sealed class TunnelEffect : DemoSceneEffect
             {
                 var dx = x - cx;
                 var dy = y - cy;
+                // d is distance from screen center.
                 var d = MathF.Sqrt(dx * dx + dy * dy);
                 if (d < 1f)
                 {
                     d = 1f;
                 }
 
+                // Inverse distance makes center look farther, edges nearer:
+                // that non-linear mapping creates tunnel depth illusion.
                 var distance = (int)(_ratio * TexHeight / d) % TexHeight;
+                // atan2 gives angle around center in radians.
                 var angle = (int)(0.5f * TexWidth * MathF.Atan2(dy, dx) / MathF.PI);
                 var idx = y * _width + x;
                 _distanceTable[idx] = distance;

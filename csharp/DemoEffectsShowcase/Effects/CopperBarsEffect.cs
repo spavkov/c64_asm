@@ -42,6 +42,8 @@ public sealed class CopperBarsEffect : DemoSceneEffect
 
     public void Render(IntPtr renderer)
     {
+        // Draw one horizontal line at a time.
+        // Multiple sine waves mixed together make the bar pattern richer.
         for (var y = 0; y < _height; y++)
         {
             var fy = y / (float)_height;
@@ -58,6 +60,7 @@ public sealed class CopperBarsEffect : DemoSceneEffect
             SdlFx.Line(renderer, 0, y, _width, y, r, g, b);
         }
 
+        // Add a moving bright scanline to emulate CRT-era glow motion.
         var glowY = (int)((Math.Sin(_time * 2.6) * 0.5 + 0.5) * (_height - 1));
         for (var i = -3; i <= 3; i++)
         {

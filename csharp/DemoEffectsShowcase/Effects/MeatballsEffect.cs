@@ -32,6 +32,8 @@ public sealed class MeatballsEffect : DemoSceneEffect
 
     public void Render(IntPtr renderer)
     {
+        // Each ball contributes a "field strength" at every sample point.
+        // Where combined field passes the threshold, we draw visible blob color.
         var balls = new (float X, float Y, float R)[]
         {
             (_width * (0.25f + 0.15f * MathF.Sin((float)_time * 1.2f)), _height * (0.40f + 0.25f * MathF.Sin((float)_time * 1.6f)), _width * 0.16f),
@@ -48,10 +50,13 @@ public sealed class MeatballsEffect : DemoSceneEffect
                 var dx = x - b.X;
                 var dy = y - b.Y;
                 var d2 = dx * dx + dy * dy + 1f;
+                // Inverse-distance style contribution:
+                // closer points get larger values, farther points fade out.
                 field += (b.R * b.R) / d2;
             }
 
             if (field < _threshold) continue;
+            // Convert strength above threshold into 0..1 for color interpolation.
             var t = Math.Clamp((field - _threshold) / 1.8f, 0f, 1f);
             SdlFx.FillRect(renderer, x, y, Step, Step, (byte)(80 + t * 150), (byte)(30 + t * 120), (byte)(140 + t * 100), (byte)(130 + t * 100));
         }

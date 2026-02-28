@@ -36,14 +36,20 @@ public sealed class CubeTwisterEffect : DemoSceneEffect
         Span<float> x = stackalloc float[4];
         for (var y = 0; y < _height; y += yStep)
         {
+            // Normalize y to range -1..+1 so the formula behaves the same on any height.
             var yNorm = (y / (float)Math.Max(1, _height - 1)) * 2f - 1f;
+
+            // phase controls the twist angle for this specific horizontal scanline.
             var phase = _spinAmount * MathF.Sin(yNorm * MathF.Cos((float)_time)) + MathF.Cos((float)_time * 0.9f);
             var amp = _width * 0.23f;
+
+            // Four sine-shifted positions represent the four visible ribbon sides.
             for (var i = 0; i < 4; i++) x[i] = centerX + amp * MathF.Sin(phase + HalfPi * i);
             for (var i = 0; i < 4; i++)
             {
                 var n = (i + 1) & 3;
                 if (x[n] <= x[i]) continue;
+                // Draw only front-facing segment in left-to-right order.
                 var shade = (byte)(70 + 180 * (0.5f + 0.5f * MathF.Sin(phase + i)));
                 SdlFx.Line(renderer, (int)x[i], y, (int)x[n], y, shade, (byte)(shade * 0.8f), 255);
             }

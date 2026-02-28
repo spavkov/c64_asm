@@ -52,11 +52,13 @@ public sealed class FireEffect : DemoSceneEffect
 
     public void Update(double deltaSeconds)
     {
+        // Bottom row is the fire source ("fuel") with randomized heat values.
         for (var x = 0; x < _gridW; x++)
         {
             _heat[x, _gridH - 1] = Math.Clamp((int)((180 + _random.Next(75)) * _intensity), 0, 255);
         }
 
+        // Propagate heat upward: each cell averages neighbors below and cools a bit.
         for (var y = _gridH - 2; y >= 0; y--)
         {
             for (var x = 0; x < _gridW; x++)
@@ -72,6 +74,7 @@ public sealed class FireEffect : DemoSceneEffect
 
     public void Render(IntPtr renderer)
     {
+        // Convert each heat value to palette color and draw scaled grid cells.
         for (var y = 0; y < _gridH; y++)
         {
             for (var x = 0; x < _gridW; x++)
@@ -98,18 +101,21 @@ public sealed class FireEffect : DemoSceneEffect
 
         if (value < 85)
         {
+            // Black -> red
             r = (byte)(value * 3);
             g = 0;
             b = 0;
         }
         else if (value < 170)
         {
+            // Red -> yellow
             r = 255;
             g = (byte)((value - 85) * 3);
             b = 0;
         }
         else
         {
+            // Yellow -> white
             r = 255;
             g = 255;
             b = (byte)((value - 170) * 3);

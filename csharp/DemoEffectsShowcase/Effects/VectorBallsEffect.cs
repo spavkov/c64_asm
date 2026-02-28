@@ -31,6 +31,9 @@ public sealed class VectorBallsEffect : DemoSceneEffect
     {
         Resize(context.Width, context.Height);
         _points.Clear();
+
+        // Build points on a sphere using latitude/longitude loops.
+        // This gives us a stable 3D "ball cloud" to rotate every frame.
         var latSteps = 13;
         var lonSteps = 24;
         for (var lat = 0; lat < latSteps; lat++)
@@ -59,10 +62,13 @@ public sealed class VectorBallsEffect : DemoSceneEffect
         var projected = new (Vector2 Pos, float Z)[_points.Count];
         for (var i = 0; i < _points.Count; i++)
         {
+            // Rotate each 3D point, then project to 2D by dividing by depth.
             var r = Rotate(_points[i], ax, ay, az);
             var depth = 3.0f + r.Z * 1.3f;
             projected[i] = (new Vector2(center.X + r.X / depth * scale, center.Y + r.Y / depth * scale), r.Z);
         }
+
+        // Painter's algorithm: draw far points first, near points last.
         Array.Sort(projected, static (a, b) => a.Z.CompareTo(b.Z));
 
         var glowCenter = center + new Vector2(MathF.Sin((float)_time * 1.3f) * _width * 0.1f, MathF.Sin((float)_time * 0.9f + 1.4f) * _height * 0.08f);
@@ -70,6 +76,7 @@ public sealed class VectorBallsEffect : DemoSceneEffect
 
         foreach (var p in projected)
         {
+            // Use depth to control both size and color brightness.
             var t = Math.Clamp((p.Z + 1.2f) / 2.4f, 0f, 1f);
             var radius = (1.6f + t * 5.4f) * _ballScale;
             SdlFx.FilledCircle(renderer, (int)p.Pos.X, (int)p.Pos.Y, (int)(radius * 1.9f), (byte)(70 + t * 90), (byte)(100 + t * 90), (byte)(220 + t * 25), (byte)(24 + t * 42));
@@ -82,6 +89,7 @@ public sealed class VectorBallsEffect : DemoSceneEffect
 
     private static Vector3 Rotate(Vector3 p, float ax, float ay, float az)
     {
+        // Rotate in three steps (X, then Y, then Z) so each axis is easy to follow.
         var (sx, cx) = MathF.SinCos(ax); var (sy, cy) = MathF.SinCos(ay); var (sz, cz) = MathF.SinCos(az);
         var y1 = p.Y * cx - p.Z * sx; var z1 = p.Y * sx + p.Z * cx;
         var x2 = p.X * cy + z1 * sy; var z2 = -p.X * sy + z1 * cy;

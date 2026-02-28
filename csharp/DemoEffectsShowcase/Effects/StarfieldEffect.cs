@@ -46,6 +46,7 @@ public sealed class StarfieldEffect : DemoSceneEffect
 
     public void Update(double deltaSeconds)
     {
+        // Move stars toward the camera by decreasing Z each frame.
         var speed = (float)(deltaSeconds * 9.5 * _speed);
         for (var i = 0; i < _stars.Length; i++)
         {
@@ -53,6 +54,7 @@ public sealed class StarfieldEffect : DemoSceneEffect
             star.Z -= speed;
             if (star.Z <= 0.08f)
             {
+                // If a star passes the camera, respawn it in the distance.
                 _stars[i] = NewStar();
                 continue;
             }
@@ -70,6 +72,7 @@ public sealed class StarfieldEffect : DemoSceneEffect
         for (var i = 0; i < _stars.Length; i++)
         {
             var star = _stars[i];
+            // Perspective projection: divide X and Y by depth (Z).
             var screenX = centerX + (star.X / star.Z) * fov;
             var screenY = centerY + (star.Y / star.Z) * fov;
             if (screenX < 0 || screenY < 0 || screenX >= _width || screenY >= _height)
@@ -78,6 +81,7 @@ public sealed class StarfieldEffect : DemoSceneEffect
                 continue;
             }
 
+            // Near stars (small Z) are brighter.
             var brightness = (byte)Math.Clamp(255 - (star.Z / MaxDepth) * 220, 40, 255);
             SdlFx.FilledCircle(renderer, (int)screenX, (int)screenY, 1, brightness, brightness, brightness);
         }
