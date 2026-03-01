@@ -157,27 +157,37 @@ Registry stores `EffectDescriptor` objects and builds `DemoSceneEffect` instance
   3. `newEffect.Initialize(context)`
 - On app exit: dispose active effect, then destroy SDL resources in reverse init order.
 
-## 11. Suggested Folder Structure
+## 11. Current Folder Structure and Effect Documentation Pattern
 
 ```text
-src/
+DemoEffectsShowcase/
   App/
-    Program.cs
-    DemoShowcaseApp.cs
   Core/
-    DemoSceneEffect.cs
-    EffectDescriptor.cs
-    EffectRegistry.cs
-    EffectInitContext.cs
-  UI/
-    SearchBox.cs
-    EffectListView.cs
-    LayoutState.cs
   Effects/
-    PlasmaEffect.cs
-    CopperBarsEffect.cs
-    StarfieldEffect.cs
+    <EffectName>Effect.cs
+    <EffectName>Effect.md
+  textures/
 ```
+
+### 11.1 Effects folder (current convention)
+- Every effect in `Effects/` is documented as a pair:
+  - implementation: `<EffectName>Effect.cs`
+  - explanation note: `<EffectName>Effect.md`
+- Current effects follow this pairing convention (for example: `PlasmaEffect.cs` + `PlasmaEffect.md`, `WireframeCubeEffect.cs` + `WireframeCubeEffect.md`, `TunnelEffect.cs` + `TunnelEffect.md`).
+
+### 11.2 Effect code comment standard (math-friendly)
+- Each `Effects/*.cs` file should include detailed inline comments that explain:
+  - what each math block does in plain language,
+  - why constants/coefficients are used,
+  - how 3D-to-2D projection, sine/cosine waves, blending, and timing work step-by-step.
+- Comment style targets junior developers with no math background: prefer small sequential explanations over compact formulas.
+- Keep comments close to the code they explain (especially inside `Render`, helper math methods, and transform/projection steps).
+
+### 11.3 Rule for adding the next effect
+When implementing a new effect, always follow the same three artifacts and quality pattern:
+1. Add `Effects/<NewEffectName>Effect.cs` implementing `DemoSceneEffect`.
+2. Add `Effects/<NewEffectName>Effect.md` describing idea, algorithm, controls, and references.
+3. Add beginner-friendly math comments in the `.cs` file so the full rendering flow is understandable without advanced math knowledge.
 
 ## 12. Initial Effect Backlog (examples)
 - Plasma
@@ -201,11 +211,13 @@ src/
 
 ### 12.1 Runtime Config Controls (implemented)
 - Plasma: speed, color tint
+- Specular plasma: speed, zoom, specular, color tint
 - Copper bars: speed, glow strength
 - Starfield: speed, FOV
 - Tunnel: speed, twist, color tint (https://lodev.org/cgtutor/tunnel.html)
 - Rotozoom: speed, zoom amount
 - Fire: intensity, cooling
+- Ascii fire: speed, intensity, cooling, font size
 - Sine scroller: scroll speed, wave amplitude
 - DYCP scroller: scroll speed, wave amplitude
 - Cube twister: speed, spin amount

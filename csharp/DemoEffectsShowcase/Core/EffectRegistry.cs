@@ -17,6 +17,15 @@ public static class EffectRegistry
         },
         new()
         {
+            Id = "specular-plasma",
+            Name = "Specular Plasma",
+            Description = "Cosine-palette plasma with glossy highlights.",
+            Category = "Raster",
+            Tags = ["plasma", "palette", "specular", "shader-style"],
+            Factory = static () => new SpecularPlasmaEffect()
+        },
+        new()
+        {
             Id = "starfield",
             Name = "Starfield",
             Description = "3D starfield flying toward camera.",
@@ -59,6 +68,15 @@ public static class EffectRegistry
             Category = "Simulation",
             Tags = ["fire", "palette", "flame"],
             Factory = static () => new FireEffect()
+        },
+        new()
+        {
+            Id = "ascii-fire",
+            Name = "Ascii Fire",
+            Description = "ASCII fire simulation with per-character palette coloring.",
+            Category = "Text",
+            Tags = ["ascii", "fire", "text", "simulation"],
+            Factory = static () => new AsciiFireEffect()
         },
         new()
         {

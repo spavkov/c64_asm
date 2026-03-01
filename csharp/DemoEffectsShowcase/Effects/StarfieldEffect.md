@@ -18,7 +18,14 @@ Projection to screen uses perspective:
 
 As `z` gets smaller, `(x/z, y/z)` grows, so stars appear to accelerate outward from the center. This naturally creates the classic hyperspace motion effect without explicit velocity in screen space.
 
-Stars that project off-screen are respawned to maintain visual density. Brightness is mapped inversely from depth so close stars are brighter and distant stars are dimmer, reinforcing depth cues.
+Stars that project off-screen are respawned to maintain visual density. Spawn positions are chosen inside the current camera frustum at the selected depth, so recycled stars are likely to appear on-screen instead of repeatedly respawning out of view. Recycled stars are also biased toward far depth so the field keeps a steady stream of incoming stars instead of collapsing to only a few visible ones.
+
+Frustum-based spawn:
+- `halfX = z * (width/2) / fov`
+- `halfY = z * (height/2) / fov`
+- `x in [-halfX, +halfX]`, `y in [-halfY, +halfY]`
+
+Brightness is mapped inversely from depth so close stars are brighter and distant stars are dimmer, reinforcing depth cues.
 
 ## Math in plain language
 - Small z means near camera.

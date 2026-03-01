@@ -55,7 +55,7 @@ public sealed class StarfieldEffect : DemoSceneEffect
             if (star.Z <= 0.08f)
             {
                 // If a star passes the camera, respawn it in the distance.
-                _stars[i] = NewStar();
+                _stars[i] = NewStar(spawnFar: true);
                 continue;
             }
 
@@ -77,7 +77,8 @@ public sealed class StarfieldEffect : DemoSceneEffect
             var screenY = centerY + (star.Y / star.Z) * fov;
             if (screenX < 0 || screenY < 0 || screenX >= _width || screenY >= _height)
             {
-                _stars[i] = NewStar();
+                // Recycle off-screen stars from far depth so visible density stays stable.
+                _stars[i] = NewStar(spawnFar: true);
                 continue;
             }
 
@@ -93,11 +94,19 @@ public sealed class StarfieldEffect : DemoSceneEffect
 
     public IReadOnlyList<EffectParameterDefinition> GetParameters() => _parameters;
 
-    private Star NewStar() =>
-        new(
-            (float)(_random.NextDouble() * 2.0 - 1.0) * _width * 0.8f,
-            (float)(_random.NextDouble() * 2.0 - 1.0) * _height * 0.8f,
-            0.2f + (float)_random.NextDouble() * MaxDepth);
+    private Star NewStar(bool spawnFar = false)
+    {
+        // Keep stars mostly inside the current perspective frustum at their spawn depth.
+        // This avoids repeated immediate off-screen respawns that reduce visible star count.
+        var zMin = spawnFar ? MaxDepth * 0.65f : 0.2f;
+        var z = zMin + (float)_random.NextDouble() * (MaxDepth - zMin);
+        var fov = _width * _fovScale;
+        var halfFrustumX = z * (_width * 0.5f) / fov;
+        var halfFrustumY = z * (_height * 0.5f) / fov;
+        var x = (float)(_random.NextDouble() * 2.0 - 1.0) * halfFrustumX * 0.95f;
+        var y = (float)(_random.NextDouble() * 2.0 - 1.0) * halfFrustumY * 0.95f;
+        return new Star(x, y, z);
+    }
 
     private struct Star(float x, float y, float z)
     {
