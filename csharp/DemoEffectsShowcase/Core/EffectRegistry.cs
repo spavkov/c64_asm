@@ -89,6 +89,15 @@ public static class EffectRegistry
         },
         new()
         {
+            Id = "ascii-donut",
+            Name = "Ascii Donut",
+            Description = "3D ASCII torus with shading and rotation controls.",
+            Category = "Text",
+            Tags = ["ascii", "donut", "torus", "3d"],
+            Factory = static () => new AsciiDonutEffect()
+        },
+        new()
+        {
             Id = "sine-scroller",
             Name = "Sine Scroller",
             Description = "Horizontal text scroller on a sine wave.",

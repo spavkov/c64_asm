@@ -219,6 +219,7 @@ When implementing a new effect, always follow the same three artifacts and quali
 - Fire: intensity, cooling
 - Ascii fire: speed, intensity, cooling, font size
 - Ascii plasma: speed, zoom, blend, pattern (dropdown), font size
+- Ascii donut: auto rotate, wobble, rotation x/y, size, thickness, light angle/height, characters, color, font size
 - Sine scroller: scroll speed, wave amplitude
 - DYCP scroller: scroll speed, wave amplitude
 - Cube twister: speed, spin amount
