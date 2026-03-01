@@ -5,7 +5,8 @@ namespace DemoEffectsShowcase.Core;
 public enum EffectParameterKind
 {
     Float,
-    Color3
+    Color3,
+    Dropdown
 }
 
 public sealed class EffectParameterDefinition
@@ -19,6 +20,9 @@ public sealed class EffectParameterDefinition
     public required Action<float> SetFloat { get; init; }
     public required Func<Vector3> GetColor3 { get; init; }
     public required Action<Vector3> SetColor3 { get; init; }
+    public required IReadOnlyList<string> DropdownOptions { get; init; }
+    public required Func<int> GetDropdownIndex { get; init; }
+    public required Action<int> SetDropdownIndex { get; init; }
 }
 
 public static class EffectParameters
@@ -40,7 +44,10 @@ public static class EffectParameters
             GetFloat = getter,
             SetFloat = setter,
             GetColor3 = static () => Vector3.One,
-            SetColor3 = static _ => { }
+            SetColor3 = static _ => { },
+            DropdownOptions = [],
+            GetDropdownIndex = static () => 0,
+            SetDropdownIndex = static _ => { }
         };
 
     public static EffectParameterDefinition Color3(
@@ -58,6 +65,31 @@ public static class EffectParameters
             GetFloat = static () => 0,
             SetFloat = static _ => { },
             GetColor3 = getter,
-            SetColor3 = setter
+            SetColor3 = setter,
+            DropdownOptions = [],
+            GetDropdownIndex = static () => 0,
+            SetDropdownIndex = static _ => { }
+        };
+
+    public static EffectParameterDefinition Dropdown(
+        string key,
+        string label,
+        IReadOnlyList<string> options,
+        Func<int> getter,
+        Action<int> setter) =>
+        new()
+        {
+            Key = key,
+            Label = label,
+            Kind = EffectParameterKind.Dropdown,
+            Min = 0,
+            Max = 0,
+            GetFloat = static () => 0,
+            SetFloat = static _ => { },
+            GetColor3 = static () => Vector3.One,
+            SetColor3 = static _ => { },
+            DropdownOptions = options,
+            GetDropdownIndex = getter,
+            SetDropdownIndex = setter
         };
 }

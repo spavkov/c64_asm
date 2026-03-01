@@ -101,13 +101,24 @@ public sealed class DemoShowcaseApp
             {
                 if (y >= py + 16 && y <= py + 30) { _draggingSlider = true; _dragParamIndex = i; _dragColorChannel = -1; HandleMouseDrag(x); return; }
             }
-            else
+            else if (p.Kind == EffectParameterKind.Color3)
             {
                 for (var c = 0; c < 3; c++)
                 {
                     var sy = py + 10 + c * 9;
                     if (y >= sy && y <= sy + 7) { _draggingSlider = true; _dragParamIndex = i; _dragColorChannel = c; HandleMouseDrag(x); return; }
                 }
+            }
+            else if (p.Kind == EffectParameterKind.Dropdown && y >= py + 16 && y <= py + 30)
+            {
+                var options = p.DropdownOptions;
+                if (options.Count == 0) return;
+                var current = Math.Clamp(p.GetDropdownIndex(), 0, options.Count - 1);
+                var next = x < LeftWidth / 2 ? current - 1 : current + 1;
+                if (next < 0) next = options.Count - 1;
+                if (next >= options.Count) next = 0;
+                p.SetDropdownIndex(next);
+                return;
             }
         }
     }
@@ -176,12 +187,19 @@ public sealed class DemoShowcaseApp
             {
                 DrawSlider(y + 16, p.GetFloat(), p.Min, p.Max, 84, 130, 196);
             }
-            else
+            else if (p.Kind == EffectParameterKind.Color3)
             {
                 var c = p.GetColor3();
                 DrawSlider(y + 10, c.X, 0, 1, 220, 70, 70);
                 DrawSlider(y + 19, c.Y, 0, 1, 70, 220, 70);
                 DrawSlider(y + 28, c.Z, 0, 1, 70, 120, 220);
+            }
+            else if (p.Kind == EffectParameterKind.Dropdown)
+            {
+                var options = p.DropdownOptions;
+                var index = options.Count == 0 ? 0 : Math.Clamp(p.GetDropdownIndex(), 0, options.Count - 1);
+                var text = options.Count == 0 ? "(none)" : options[index];
+                DrawDropdown(y + 16, text);
             }
         }
     }
@@ -195,6 +213,14 @@ public sealed class DemoShowcaseApp
         var fg = new SDL.SDL_Rect { x = 16, y = y, w = Math.Max(1, (int)((LeftWidth - 32) * Math.Clamp(t, 0f, 1f))), h = 8 };
         SDL.SDL_SetRenderDrawColor(_renderer, r, g, b, 255);
         SDL.SDL_RenderFillRect(_renderer, ref fg);
+    }
+
+    private void DrawDropdown(int y, string value)
+    {
+        var bg = new SDL.SDL_Rect { x = 16, y = y, w = LeftWidth - 32, h = 14 };
+        SDL.SDL_SetRenderDrawColor(_renderer, 52, 56, 66, 255);
+        SDL.SDL_RenderFillRect(_renderer, ref bg);
+        SdlText.Draw(_renderer, $"< {value} >", 20, y + 3, 1, 210, 220, 235);
     }
 
     private void DrawRightPanel(int w, int h, double dt)

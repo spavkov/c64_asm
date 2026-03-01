@@ -80,6 +80,15 @@ public static class EffectRegistry
         },
         new()
         {
+            Id = "ascii-plasma",
+            Name = "Ascii Plasma",
+            Description = "ASCII plasma with pattern blending and heat-map colors.",
+            Category = "Text",
+            Tags = ["ascii", "plasma", "text", "waves"],
+            Factory = static () => new AsciiPlasmaEffect()
+        },
+        new()
+        {
             Id = "sine-scroller",
             Name = "Sine Scroller",
             Description = "Horizontal text scroller on a sine wave.",
