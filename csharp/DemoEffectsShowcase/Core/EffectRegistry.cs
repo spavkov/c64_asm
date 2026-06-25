@@ -116,6 +116,15 @@ public static class EffectRegistry
         },
         new()
         {
+            Id = "twister",
+            Name = "Twister",
+            Description = "C64-style chrome twister with a stand-still / speed-up / slow-down rhythm.",
+            Category = "3D Illusion",
+            Tags = ["twister", "chrome", "c64", "scanline", "ribbon"],
+            Factory = static () => new TwisterEffect()
+        },
+        new()
+        {
             Id = "wireframe-cube",
             Name = "Wireframe Cube",
             Description = "Classic rotating 3D wireframe cube.",
