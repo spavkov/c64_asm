@@ -11,11 +11,14 @@ public sealed class DemoShowcaseApp
     private const int SearchHeight = 34;
     private const int ListHeight = 320;
     private const int RowHeight = 22;
+    private const int VisibleRows = ListHeight / RowHeight;
+    private const int ListTop = SearchHeight + 8;
 
     private readonly List<EffectDescriptor> _all = [];
     private readonly List<EffectDescriptor> _filtered = [];
     private DemoSceneEffect? _active;
     private int _selectedIndex;
+    private int _listOffset;
     private string _search = string.Empty;
     private IntPtr _window;
     private IntPtr _renderer;
@@ -67,8 +70,27 @@ public sealed class DemoShowcaseApp
             if (ev.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN) HandleMouseDown(ev.button.x, ev.button.y);
             if (ev.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP) { _draggingSlider = false; _dragParamIndex = -1; _dragColorChannel = -1; }
             if (ev.type == SDL.SDL_EventType.SDL_MOUSEMOTION && _draggingSlider) HandleMouseDrag(ev.motion.x);
+            if (ev.type == SDL.SDL_EventType.SDL_MOUSEWHEEL) HandleMouseWheel(ev.wheel);
             if (ev.type == SDL.SDL_EventType.SDL_KEYDOWN) HandleKey(ev.key.keysym.sym);
         }
+    }
+
+    private void HandleMouseWheel(SDL.SDL_MouseWheelEvent wheel)
+    {
+        SDL.SDL_GetMouseState(out var x, out var y);
+        if (_draggingSlider || x < 10 || x >= LeftWidth - 10 || y < ListTop || y >= ListTop + ListHeight) return;
+        var direction = wheel.direction == (uint)SDL.SDL_MouseWheelDirection.SDL_MOUSEWHEEL_FLIPPED ? -1 : 1;
+        ScrollList(-direction * wheel.y * 3);
+    }
+
+    private void ScrollList(int rows) =>
+        _listOffset = Math.Clamp(_listOffset + rows, 0, Math.Max(0, _filtered.Count - VisibleRows));
+
+    private void EnsureSelectedVisible()
+    {
+        if (_selectedIndex < _listOffset) _listOffset = _selectedIndex;
+        if (_selectedIndex >= _listOffset + VisibleRows) _listOffset = _selectedIndex - VisibleRows + 1;
+        ScrollList(0);
     }
 
     private void HandleKey(SDL.SDL_Keycode key)
@@ -84,9 +106,17 @@ public sealed class DemoShowcaseApp
     private void HandleMouseDown(int x, int y)
     {
         if (x > LeftWidth) return;
-        if (y >= SearchHeight + 8 && y < SearchHeight + 8 + ListHeight)
+        if (y >= ListTop && y < ListTop + ListHeight)
         {
-            var idx = (y - (SearchHeight + 8)) / RowHeight;
+            if (x < 10 || x >= LeftWidth - 10 || y >= ListTop + VisibleRows * RowHeight) return;
+            if (_filtered.Count > VisibleRows && x >= LeftWidth - 20)
+            {
+                var thumb = GetListScrollThumb();
+                if (y < thumb.y) ScrollList(-VisibleRows);
+                else if (y >= thumb.y + thumb.h) ScrollList(VisibleRows);
+                return;
+            }
+            var idx = _listOffset + (y - ListTop) / RowHeight;
             if (idx >= 0 && idx < _filtered.Count) { _selectedIndex = idx; ActivateSelected(); }
             return;
         }
@@ -165,14 +195,26 @@ public sealed class DemoShowcaseApp
         SdlText.Draw(_renderer, "EFFECTS", 12, 10, 1, 235, 245, 255);
         SdlText.Draw(_renderer, $"SEARCH: {_search}", 14, 18, 1, 190, 205, 220);
 
-        var listTop = SearchHeight + 8;
-        for (var i = 0; i < _filtered.Count && i < ListHeight / RowHeight; i++)
+        var canScroll = _filtered.Count > VisibleRows;
+        for (var rowIndex = 0; rowIndex < VisibleRows && _listOffset + rowIndex < _filtered.Count; rowIndex++)
         {
-            var row = new SDL.SDL_Rect { x = 10, y = listTop + i * RowHeight, w = LeftWidth - 20, h = RowHeight - 2 };
+            var i = _listOffset + rowIndex;
+            var row = new SDL.SDL_Rect { x = 10, y = ListTop + rowIndex * RowHeight, w = LeftWidth - (canScroll ? 32 : 20), h = RowHeight - 2 };
             var selected = i == _selectedIndex;
             SDL.SDL_SetRenderDrawColor(_renderer, selected ? (byte)88 : (byte)56, selected ? (byte)122 : (byte)60, selected ? (byte)164 : (byte)72, 255);
             SDL.SDL_RenderFillRect(_renderer, ref row);
-            SdlText.Draw(_renderer, _filtered[i].Name, 16, listTop + i * RowHeight + 6, 1, 240, 245, 255);
+            SdlText.Draw(_renderer, _filtered[i].Name, 16, ListTop + rowIndex * RowHeight + 6, 1, 240, 245, 255);
+        }
+        if (canScroll)
+        {
+            var track = new SDL.SDL_Rect { x = LeftWidth - 18, y = ListTop, w = 8, h = VisibleRows * RowHeight };
+            SDL.SDL_SetRenderDrawColor(_renderer, 45, 50, 62, 255);
+            SDL.SDL_RenderFillRect(_renderer, ref track);
+            var thumb = GetListScrollThumb();
+            SDL.SDL_SetRenderDrawColor(_renderer, 130, 160, 195, 255);
+            SDL.SDL_RenderFillRect(_renderer, ref thumb);
+            SdlText.Draw(_renderer, $"{_listOffset + 1}-{_listOffset + VisibleRows} OF {_filtered.Count} - SCROLL", 16,
+                ListTop + VisibleRows * RowHeight + 2, 1, 190, 205, 220);
         }
 
         var parameters = _active?.GetParameters() ?? [];
@@ -202,6 +244,14 @@ public sealed class DemoShowcaseApp
                 DrawDropdown(y + 16, text);
             }
         }
+    }
+
+    private SDL.SDL_Rect GetListScrollThumb()
+    {
+        var trackHeight = VisibleRows * RowHeight;
+        var thumbHeight = Math.Max(16, trackHeight * VisibleRows / _filtered.Count);
+        var top = ListTop + (trackHeight - thumbHeight) * _listOffset / (_filtered.Count - VisibleRows);
+        return new SDL.SDL_Rect { x = LeftWidth - 18, y = top, w = 8, h = thumbHeight };
     }
 
     private void DrawSlider(int y, float v, float min, float max, byte r, byte g, byte b)
@@ -240,6 +290,7 @@ public sealed class DemoShowcaseApp
 
     private void ApplyFilter()
     {
+        _listOffset = 0;
         _filtered.Clear();
         foreach (var e in _all)
         {
@@ -255,6 +306,7 @@ public sealed class DemoShowcaseApp
     private void ActivateSelected()
     {
         if (_filtered.Count == 0) return;
+        EnsureSelectedVisible();
         var d = _filtered[_selectedIndex];
         if (_active?.Id == d.Id) return;
         _active?.Dispose();

@@ -1,7 +1,7 @@
 # TwisterEffect
 
 ## Overview
-A classic C64-style chrome twister: a vertical column of stacked horizontal slices whose four phase-shifted edges form a twisting metallic ribbon on a white background. The twist follows a controllable rhythm — it stands still, gradually speeds up, then gradually slows down, and loops forever.
+A classic C64-style chrome twister: a vertical column of stacked horizontal slices whose four phase-shifted edges form a twisting metallic ribbon on a white background. After an optional initial pause, rotation smoothly speeds up and slows down without reversing.
 
 ## How it works
 1. For each `y`-row, compute a twist phase.
@@ -12,9 +12,10 @@ A classic C64-style chrome twister: a vertical column of stacked horizontal slic
 ## How it works in detail
 The column is rendered into a fixed 384x288 streaming texture, then scaled to fit the panel (centered, white-filled background).
 
-For each scanline, a phase `a` is built from a nested sine that clusters the bands into "bulges":
+For each scanline, a phase `a` combines a stable spatial twist with small traveling waves:
 
-- `a = twistAmp * sin(uy * TwistFreq - scroll) + spin`
+- `flow = spin * 0.72`
+- `a = spin + uy * 7 + 0.55 * sin(uy * 2.2 - flow) + 0.12 * sin(uy * 5.4 + flow * 0.55)`
 
 Four edge positions come from quarter-phase offsets:
 
@@ -23,21 +24,26 @@ Four edge positions come from quarter-phase offsets:
 A face between `v[i]` and `v[i+1]` is drawn only when `v[i+1] - v[i] > 0` (a cheap front-facing test). Across each face the surface angle sweeps from one corner to the next, and the grayscale is taken from `cos(angle)` (diffuse) plus `pow(cos(angle), 22)` (specular) — that sweep is what gives the shiny chrome look. The face edges are darkened to form the crease/diamond notches.
 
 ### Liveliness
-- A **beat-snap** envelope (`exp(-6 * frac(beat))`) makes the band count and sway pop on the beat.
-- A **bar** oscillator breathes the column between loose (few fat bulges) and tight (many thin bands).
-- A **serpentine sway** offsets each row horizontally so the column bends like a snake (inspired by the Pico-8 `xm` trick).
+Small sine waves vary the width and centerline. The twist density stays stable,
+avoiding sudden beat snaps or bursts of tightly packed bands.
 
 ### Twist-speed rhythm
-`RhythmSpeed(t)` returns the rotation speed:
-1. `t < Standstill`: speed is 0 — the column stands perfectly still.
-2. Then it `smoothstep`-eases from `Min` up to `Max` over `Ramp Up`.
-3. Then it eases from `Max` back down to `Min` over `Ramp Down`, and the up/down cycle repeats.
+Like Meatballs' smooth oscillating positions, the rotation rhythm uses a sinusoid.
+Here it modulates **speed**, not position, so the twister never turns backward:
 
-The beat/breathing/sway clocks advance only while twisting, so the standstill is truly frozen and the slow phase pulses lazily.
+- `averageSpeed = TurnsPerCycle * 2*pi / CycleDuration`
+- `speed = averageSpeed * (1 - PulseStrength * cos(2*pi * elapsed / CycleDuration))`
+
+`ForwardSpin(t)` evaluates the integral of that speed. Each update adds only the
+current frame's difference, so changing controls cannot rewind the accumulated
+rotation. With fixed controls it is continuous between cycles and advances
+`TurnsPerCycle` each cycle. With pulse strength
+between 0 and 1, speed is always nonnegative. Full strength starts from rest,
+accelerates to its peak halfway through the cycle, and eases back to rest.
+The deformation follows the rotation phase, so the initial standstill is frozen.
 
 ## Main knobs
 - `Standstill (s)`: how long the column stands still at the start.
-- `Ramp Up (s)`: time to accelerate from the lazy speed to the fast speed.
-- `Ramp Down (s)`: time to decelerate from fast back to lazy.
-- `Min Speed`: the lazy floor speed (never fully stops after the initial standstill).
-- `Max Speed`: the fast peak speed.
+- `Cycle Duration (s)`: duration of one complete speed-up/slow-down cycle.
+- `Turns / Cycle`: forward rotations completed in each cycle.
+- `Pulse Strength`: 0 gives constant speed; 1 gives the full stop-to-fast-to-stop rhythm.

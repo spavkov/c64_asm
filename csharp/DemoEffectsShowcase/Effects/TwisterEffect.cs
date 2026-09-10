@@ -7,8 +7,8 @@ namespace DemoEffectsShowcase.Effects;
 /// <summary>
 /// Classic C64-style chrome twister: a column of stacked horizontal slices whose
 /// four phase-shifted edges form a twisting metallic ribbon. The twist speed
-/// follows a controllable rhythm (stand still -> ramp up -> ramp down -> loop),
-/// with beat-snap breathing and a serpentine side-to-side sway.
+/// follows a forward-only sine-wave rhythm while gentle traveling waves keep the column
+/// moving without changing its overall shape abruptly.
 /// </summary>
 public sealed class TwisterEffect : DemoSceneEffect
 {
@@ -17,31 +17,20 @@ public sealed class TwisterEffect : DemoSceneEffect
     private const int IH = 288;
 
     private const float P2 = 1.57079632679f;  // pi/2
-    private const float TAU = 6.28318530718f;
 
-    // Static feel of the column.
-    private const float TwistFreq = 2.6f;   // base spatial frequency of the spiral
-    private const float BeatLen = 1.36f;    // beat-snap period (in "twisting seconds")
-    private const float BarLen = 2.6f;      // loose<->tight breathing period
-    private const float ScrollFactor = 1.2f;// vertical band travel relative to spin
+    private const float TwistFreq = 7.0f;
+    private const float FlowFactor = 0.72f;
 
-    // ---- Twist-speed rhythm controls (exposed as sliders) ----
-    private float _standstillDur = 3.0f;  // initial dead-still pause (no twisting)
-    private float _rampUpDur = 7.0f;      // gradually speed up (Min -> Max)
-    private float _rampDownDur = 7.0f;    // gradually slow down (Max -> Min)
-    private float _minSpeed = 0.20f;      // lazy speed; never fully stops after the start
-    private float _maxSpeed = 3.0f;       // fast peak speed
+    // ---- Forward rotation controls (exposed as sliders) ----
+    private float _standstillDur = 0.5f;
+    private float _cycleDur = 10.5f;
+    private float _turnsPerCycle = 1.35f;
+    private float _pulseStrength = 1f;
 
     // Animation state.
-    private float _time;
+    private double _time;
     private float _spinPhase;
-    private float _scrollPhase;
-    private float _beatClock;   // these advance only while twisting -> freeze when still
-    private float _barClock;
-    private float _swayClock;
-    private float _twistAmp;
-    private float _ampX;
-    private float _swayAmp;
+    private float _flowPhase;
 
     private readonly uint[] _pixels = new uint[IW * IH];
     private IntPtr _texture = IntPtr.Zero;
@@ -55,16 +44,15 @@ public sealed class TwisterEffect : DemoSceneEffect
         _parameters =
         [
             EffectParameters.Float("standstill", "Standstill (s)", () => _standstillDur, v => _standstillDur = v, 0f, 10f),
-            EffectParameters.Float("rampup", "Ramp Up (s)", () => _rampUpDur, v => _rampUpDur = v, 0.5f, 20f),
-            EffectParameters.Float("rampdown", "Ramp Down (s)", () => _rampDownDur, v => _rampDownDur = v, 0.5f, 20f),
-            EffectParameters.Float("minspeed", "Min Speed", () => _minSpeed, v => _minSpeed = v, 0f, 2f),
-            EffectParameters.Float("maxspeed", "Max Speed", () => _maxSpeed, v => _maxSpeed = v, 0.5f, 8f)
+            EffectParameters.Float("cycle", "Cycle Duration (s)", () => _cycleDur, v => _cycleDur = v, 2f, 20f),
+            EffectParameters.Float("turns", "Turns / Cycle", () => _turnsPerCycle, v => _turnsPerCycle = v, 0.5f, 3f),
+            EffectParameters.Float("pulse", "Pulse Strength", () => _pulseStrength, v => _pulseStrength = v, 0f, 1f)
         ];
     }
 
     public string Id => "twister";
     public string Name => "Twister";
-    public string Description => "C64-style chrome twister with a stand-still / speed-up / slow-down rhythm.";
+    public string Description => "C64-style chrome twister with smooth, forward-only sine-wave rotation.";
     public IReadOnlyList<string> Tags => ["twister", "chrome", "c64", "scanline", "ribbon"];
 
     public void Initialize(in EffectInitContext context)
@@ -81,33 +69,14 @@ public sealed class TwisterEffect : DemoSceneEffect
 
     public void Update(double deltaSeconds)
     {
-        var dt = (float)deltaSeconds;
+        // A debugger pause or dragged window must not turn into a visible phase jump.
+        var dt = Math.Clamp((float)deltaSeconds, 0f, 1f / 30f);
+        var previousTime = _time;
         _time += dt;
 
-        var spinSpeed = RhythmSpeed(_time);
-        var m = _maxSpeed > 0f ? spinSpeed / _maxSpeed : 0f; // 0 = still .. 1 = fast
-
-        // Rotation + vertical travel follow the rhythm (frozen when standing still).
-        _spinPhase += spinSpeed * dt;
-        _scrollPhase += ScrollFactor * spinSpeed * dt;
-
-        // Texture clocks advance only while twisting, so a standstill is truly frozen
-        // and the slow/lazy phase pulses slowly too.
-        _beatClock += m * dt;
-        _barClock += m * dt;
-        _swayClock += m * dt;
-
-        // Per-beat snap envelope: jumps to 1 on the beat, decays fast.
-        var bp = _beatClock / BeatLen;
-        var kick = MathF.Exp(-6f * (bp - MathF.Floor(bp)));
-
-        // Slow breathing between loose (0) and tight (1) over a bar.
-        var slow = 0.5f - 0.5f * MathF.Cos(_barClock * (TAU / BarLen));
-        slow *= slow; // bias toward loose, sharper tightening
-
-        _twistAmp = 1.0f + 9.5f * slow + 1.6f * kick; // number of spiral bands
-        _ampX = 0.60f - 0.20f * slow;                 // column fatter loose, slimmer tight
-        _swayAmp = 0.24f + 0.14f * kick + 0.08f * slow;
+        // Integrate only this frame so changing controls cannot rewind the rotation.
+        _spinPhase += (float)Math.Max(0, ForwardSpin(_time) - ForwardSpin(previousTime));
+        _flowPhase = _spinPhase * FlowFactor;
     }
 
     public void Render(IntPtr renderer)
@@ -152,27 +121,23 @@ public sealed class TwisterEffect : DemoSceneEffect
 
     public IReadOnlyList<EffectParameterDefinition> GetParameters() => _parameters;
 
-    // Twist rotation speed for the current rhythm position (radians/sec).
-    private float RhythmSpeed(float t)
+    private double ForwardSpin(double t)
     {
-        if (t < _standstillDur) return 0f;                  // 1) stand perfectly still
-        var ct = t - _standstillDur;
-        var cycle = MathF.Max(0.001f, _rampUpDur + _rampDownDur);
-        var cp = ct - cycle * MathF.Floor(ct / cycle);
-        float f;
-        if (cp < _rampUpDur)
-            f = Smoothstep(cp / _rampUpDur);                     // 2) ease up 0 -> 1
-        else
-            f = Smoothstep(1f - (cp - _rampUpDur) / _rampDownDur); // 3) ease down 1 -> 0
-        return _minSpeed + (_maxSpeed - _minSpeed) * f;
+        if (t <= _standstillDur) return 0f;
+
+        var elapsed = t - _standstillDur;
+        var cycles = elapsed / _cycleDur;
+        var progress = cycles - Math.Floor(cycles);
+        // Integral of speed = averageSpeed * (1 - pulse * cos(phase)).
+        // A pulse in [0, 1] eases the speed without ever making it negative.
+        return _turnsPerCycle * Math.Tau *
+            (cycles - _pulseStrength * Math.Sin(progress * Math.Tau) / Math.Tau);
     }
 
     private void FillPixels()
     {
-        var twistAmp = _twistAmp;
-        var ampX = _ampX;
         var spin = _spinPhase;
-        var scroll = _scrollPhase;
+        var flow = _flowPhase;
 
         Span<float> v = stackalloc float[4];
         Span<float> phi = stackalloc float[4];
@@ -181,14 +146,12 @@ public sealed class TwisterEffect : DemoSceneEffect
         {
             var uy = y / (float)IH * 2f - 1f;
 
-            // Per-row horizontal sway -> the column bends/slithers like a snake
-            // (inspired by the Pico-8 "xm" offset).
-            var sway = _swayAmp * MathF.Cos(_swayClock * 0.8f - uy * 1.7f
-                       + 0.7f * MathF.Sin(_swayClock * 0.3f + uy * 0.6f));
-
-            // Nested sine -> clustered "bulge" bands; scroll moves them vertically.
-            var inner = uy * TwistFreq - scroll;
-            var a = twistAmp * MathF.Sin(inner) + spin;
+            var sway = 0.07f * MathF.Sin(flow * 0.55f - uy * 2.3f)
+                     + 0.025f * MathF.Sin(flow * 0.27f + uy * 5.1f);
+            var ampX = 0.52f + 0.045f * MathF.Sin(flow * 0.4f - uy * 1.8f);
+            var a = spin + uy * TwistFreq
+                  + 0.55f * MathF.Sin(uy * 2.2f - flow)
+                  + 0.12f * MathF.Sin(uy * 5.4f + flow * 0.55f);
 
             for (var i = 0; i < 4; i++)
             {
@@ -231,12 +194,6 @@ public sealed class TwisterEffect : DemoSceneEffect
                 _pixels[rowOff + x] = 0xFF000000u | ((uint)c << 16) | ((uint)c << 8) | c;
             }
         }
-    }
-
-    private static float Smoothstep(float x)
-    {
-        x = Math.Clamp(x, 0f, 1f);
-        return x * x * (3f - 2f * x);
     }
 
     private static float Smoothstep01(float x, float edge)

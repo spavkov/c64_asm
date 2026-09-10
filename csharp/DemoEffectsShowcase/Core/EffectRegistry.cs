@@ -118,7 +118,7 @@ public static class EffectRegistry
         {
             Id = "twister",
             Name = "Twister",
-            Description = "C64-style chrome twister with a stand-still / speed-up / slow-down rhythm.",
+            Description = "C64-style chrome twister with smooth, forward-only sine-wave rotation.",
             Category = "3D Illusion",
             Tags = ["twister", "chrome", "c64", "scanline", "ribbon"],
             Factory = static () => new TwisterEffect()
@@ -158,6 +158,15 @@ public static class EffectRegistry
             Category = "3D",
             Tags = ["cube", "plasma", "hybrid"],
             Factory = static () => new CubePlasmaSideEffect()
+        },
+        new()
+        {
+            Id = "metaballs",
+            Name = "Metaballs",
+            Description = "Glossy 2D blobs that smoothly merge and separate.",
+            Category = "Simulation",
+            Tags = ["metaballs", "meta balls", "blob", "field", "liquid"],
+            Factory = static () => new MetaballsEffect()
         },
         new()
         {
